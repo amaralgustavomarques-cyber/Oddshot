@@ -40,8 +40,15 @@ const MAX_FIXTURES_PER_FETCH = 3; // reduzido para caber no limite de 60s de exe
 
 const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet", "betnacional"];
 
+// A Betfair Exchange (mercado de apostas mútuas entre usuários, "-ex") é um
+// produto diferente do Betfair de odds fixas — as odds de lá nem sempre
+// batem com o que você realmente consegue no site/app brasileiro, então
+// excluímos essa variante mesmo com "betfair" passando no filtro acima.
+const EXCLUDED_VARIANTS = ["betfairex", "exchange"];
+
 function isAllowedHouse(key: string): boolean {
   const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (EXCLUDED_VARIANTS.some((ex) => normalized.includes(ex))) return false;
   return ALLOWED_HOUSES.some((allowed) => normalized.includes(allowed));
 }
 
