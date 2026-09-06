@@ -8,12 +8,12 @@ const THE_ODDS_API_SPORTS = ["soccer_brazil_campeonato", "soccer_epl", "basketba
 const ODDS_API_IO_SPORTS = ["football", "basketball"];
 const ODDSPAPI_TOURNAMENTS = ["325"]; // 325 = Brasileirão Série A (confirmado via teste real)
 
-// GET /api/odds                       -> usa o provider padrão (the-odds-api, já testado)
-// GET /api/odds?provider=odds-api-io  -> alterna pra Odds-API.io
-// GET /api/odds?provider=oddspapi     -> alterna pra OddsPapi (melhor chance de cobrir Brasileirão)
-// GET /api/odds?sport=X               -> busca só um esporte/torneio específico
+// GET /api/odds                          -> usa o provider padrão (oddspapi, já confirmado trazendo o Brasileirão de verdade)
+// GET /api/odds?provider=the-odds-api    -> alterna pra The Odds API (precisa de ODDS_API_KEY)
+// GET /api/odds?provider=odds-api-io     -> alterna pra Odds-API.io
+// GET /api/odds?sport=X                  -> busca só um esporte/torneio específico
 export async function GET(req: NextRequest) {
-  const providerName = req.nextUrl.searchParams.get("provider") ?? "the-odds-api";
+  const providerName = req.nextUrl.searchParams.get("provider") ?? "oddspapi";
   const sportParam = req.nextUrl.searchParams.get("sport");
 
   try {
@@ -25,19 +25,19 @@ export async function GET(req: NextRequest) {
       return await runProvider(provider, sportKeys);
     }
 
-    if (providerName === "oddspapi") {
-      const apiKey = process.env.ODDS_PAPI_KEY;
-      if (!apiKey) return missingKeyError("ODDS_PAPI_KEY");
-      const provider = new OddsPapiProvider({ apiKey });
-      const sportKeys = sportParam ? [sportParam] : ODDSPAPI_TOURNAMENTS;
+    if (providerName === "the-odds-api") {
+      const apiKey = process.env.ODDS_API_KEY;
+      if (!apiKey) return missingKeyError("ODDS_API_KEY");
+      const provider = new TheOddsApiProvider({ apiKey });
+      const sportKeys = sportParam ? [sportParam] : THE_ODDS_API_SPORTS;
       return await runProvider(provider, sportKeys);
     }
 
-    // padrão: the-odds-api (já confirmado funcionando no seu deploy)
-    const apiKey = process.env.ODDS_API_KEY;
-    if (!apiKey) return missingKeyError("ODDS_API_KEY");
-    const provider = new TheOddsApiProvider({ apiKey });
-    const sportKeys = sportParam ? [sportParam] : THE_ODDS_API_SPORTS;
+    // padrão: oddspapi (confirmado funcionando com o Brasileirão de verdade)
+    const apiKey = process.env.ODDS_PAPI_KEY;
+    if (!apiKey) return missingKeyError("ODDS_PAPI_KEY");
+    const provider = new OddsPapiProvider({ apiKey });
+    const sportKeys = sportParam ? [sportParam] : ODDSPAPI_TOURNAMENTS;
     return await runProvider(provider, sportKeys);
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 502 });
