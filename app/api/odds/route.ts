@@ -3,6 +3,10 @@ import { TheOddsApiProvider } from "@/lib/providers/the-odds-api";
 import { OddsApiIoProvider } from "@/lib/providers/odds-api-io";
 import { OddsPapiProvider } from "@/lib/providers/oddspapi";
 
+// 60s é o máximo permitido no plano gratuito (Hobby) da Vercel — buscar
+// vários campeonatos com pausas entre chamadas pode chegar perto disso.
+export const maxDuration = 60;
+
 // Esportes/torneios por provider — cada um usa o formato de chave da própria API.
 const THE_ODDS_API_SPORTS = ["soccer_brazil_campeonato", "soccer_epl", "basketball_nba"];
 const ODDS_API_IO_SPORTS = ["football", "basketball"];
@@ -58,11 +62,24 @@ function missingKeyError(varName: string) {
 }
 
 async function runProvider(provider: { fetchEvents(key: string): Promise<any[]> }, sportKeys: string[]) {
-  const results = await Promise.allSettled(sportKeys.map((key) => provider.fetchEvents(key)));
-  const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  const errors = results
-    .map((r, i) => (r.status === "rejected" ? { sport: sportKeys[i], error: String(r.reason) } : null))
-    .filter(Boolean);
+  // Faz UMA chamada por vez, com pausa entre elas — a OddsPapi bloqueia
+  // (429 RATE_LIMITED) quando várias chamadas chegam juntas no mesmo endpoint.
+  const events: any[] = [];
+  const errors: { sport: string; error: string }[] = [];
+
+  for (let i = 0; i < sportKeys.length; i++) {
+    try {
+      const result = await provider.fetchEvents(sportKeys[i]);
+      events.push(...result);
+    } catch (err) {
+      errors.push({ sport: sportKeys[i], error: String(err) });
+    }
+    if (i < sportKeys.length - 1) await sleep(2500);
+  }
 
   return NextResponse.json({ events, errors, fetchedAt: Date.now() });
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
