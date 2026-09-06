@@ -631,7 +631,7 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [showFilters, setShowFilters] = useState(true);
   const [manualEvents, setManualEvents] = useState([]);
-  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt } = useLiveOdds(900000); // 15 min — cota do free tier é curta
+  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt } = useLiveOdds(3600000); // 1h — orçamento calculado para ~46 chamadas/hora
   const events = [...liveEvents, ...manualEvents];
   const setEvents = setManualEvents; // "Gerenciar odds" segue editando só os manuais
   const defaultBanca = 1000;
