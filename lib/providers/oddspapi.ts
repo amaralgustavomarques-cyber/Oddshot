@@ -36,7 +36,7 @@ import type { OddsProvider, NormalizedEvent, NormalizedOutcome } from "./types";
 
 const BASE_URL = "https://api.oddspapi.io/v4";
 const MAIN_MARKET_ID = "101"; // 1X2 / moneyline
-const MAX_FIXTURES_PER_FETCH = 15; // proteção de cota — ajuste conforme seu plano
+const MAX_FIXTURES_PER_FETCH = 3; // cota do plano free é bem curta — mantenha isso baixo
 
 const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet", "betnacional"];
 
