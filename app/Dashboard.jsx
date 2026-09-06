@@ -427,7 +427,7 @@ const emptyForm = () => ({
   outcomes: [emptyOutcome(), emptyOutcome()],
 });
 
-function OddsManager({ events, setEvents, T }) {
+function OddsManager({ events, setEvents, T, banca }) {
   const [editingId, setEditingId] = useState(null); // null = fechado, "new" = novo, ou id existente
   const [form, setForm] = useState(emptyForm());
 
@@ -591,7 +591,7 @@ function OddsManager({ events, setEvents, T }) {
         </div>
         <div className="divide-y" style={{ borderColor: T.border }}>
           {events.map((ev) => {
-            const analysis = analyzeEvent(ev, 1000);
+            const analysis = analyzeEvent(ev, banca);
             return (
               <div key={ev.id} style={{ borderBottom: `1px solid ${T.border}` }} className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
@@ -634,7 +634,7 @@ export default function App() {
   const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt } = useLiveOdds(3600000); // 1h — orçamento calculado para ~46 chamadas/hora
   const events = [...liveEvents, ...manualEvents];
   const setEvents = setManualEvents; // "Gerenciar odds" segue editando só os manuais
-  const defaultBanca = 1000;
+  const [banca, setBanca] = useState(1000);
 
   // mantém "atualizado há X min" vivo sem precisar de fonte externa
   useEffect(() => {
@@ -647,7 +647,7 @@ export default function App() {
     market: "Todos", minArb: "-100", onlyActive: false, freshness: "Todos",
   });
 
-  const analyzed = useMemo(() => events.map((ev) => ({ ev, analysis: analyzeEvent(ev, defaultBanca) })), [events, tick]);
+  const analyzed = useMemo(() => events.map((ev) => ({ ev, analysis: analyzeEvent(ev, banca) })), [events, tick, banca]);
 
   const sports = ["Todos", ...new Set(events.map((e) => e.sport))];
   const leagues = ["Todas", ...new Set(events.map((e) => e.league))];
@@ -702,6 +702,16 @@ export default function App() {
             <Clock size={13} style={{ color: T.textMuted }} />
             <span style={{ color: T.textMuted }} className="text-xs">{formatAgo(lastUpdateMin)}</span>
           </div>
+          <div style={{ background: T.panelAlt, border: `1px solid ${T.border}` }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
+            <span style={{ color: T.textMuted }} className="text-xs">R$</span>
+            <input
+              type="number" min={0} value={banca}
+              onChange={(e) => setBanca(Math.max(0, Number(e.target.value)))}
+              title="Banca usada para calcular investimento, retorno e lucro em todos os eventos"
+              style={{ ...mono, color: T.text, background: "transparent", width: 72 }}
+              className="text-xs outline-none"
+            />
+          </div>
           <button onClick={() => setTick((n) => n + 1)} style={{ background: `${INDIGO}1F`, color: INDIGO, border: `1px solid ${INDIGO}40` }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
             <RefreshCw size={13} /> Atualizar
           </button>
@@ -730,7 +740,7 @@ export default function App() {
               <StatCard T={T} icon={Layers} label="Eventos monitorados" value={events.length} accent={INDIGO} />
               <StatCard T={T} icon={TrendingUp} label="Oportunidades" value={opportunities.length} accent={GREEN} sub={`de ${events.length} eventos`} />
               <StatCard T={T} icon={Target} label="Melhor arbitragem" value={bestArb ? formatPct(bestArb.analysis.arbPercent) : "—"} accent={bestArb?.analysis.arbPercent > 0 ? GREEN : RED} sub={bestArb ? `${bestArb.ev.home} × ${bestArb.ev.away}` : ""} />
-              <StatCard T={T} icon={TrendingUp} label="Maior lucro potencial" value={bestProfit ? formatBRL(bestProfit.analysis.lucro) : "—"} accent={GREEN} sub="banca base R$ 1.000" />
+              <StatCard T={T} icon={TrendingUp} label="Maior lucro potencial" value={bestProfit ? formatBRL(bestProfit.analysis.lucro) : "—"} accent={GREEN} sub={`banca base ${formatBRL(banca)}`} />
               <StatCard T={T} icon={Building2} label="Casas monitoradas" value={HOUSES.length} accent={INDIGO} />
               <StatCard T={T} icon={Clock} label="Última atualização" value={formatAgo(lastUpdateMin)} accent={AMBER} />
             </div>
@@ -804,7 +814,7 @@ export default function App() {
           </div>
 
         <div style={{ display: tab === "manage" ? "block" : "none" }}>
-          <OddsManager events={events} setEvents={setEvents} T={T} />
+          <OddsManager events={events} setEvents={setEvents} T={T} banca={banca} />
         </div>
 
         <div style={{ display: tab === "calc" ? "block" : "none" }}>
