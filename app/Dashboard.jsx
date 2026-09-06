@@ -6,7 +6,7 @@ import {
   TrendingUp, Clock, Building2, Target, Layers,
   CheckCircle2, XCircle, AlertTriangle, SlidersHorizontal, Calculator,
   LayoutDashboard, Plus, Minus, Trophy, ClipboardEdit, Trash2, Pencil, Save, X
-} from "lucide-react";          
+} from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useLiveOdds } from "@/lib/use-live-odds";
 
@@ -21,7 +21,57 @@ const now = Date.now();
 const minsAgo = (m) => now - m * 60 * 1000;
 
 const SEED_EVENTS = [
-
+  {
+    id: "ev1", sport: "Futebol", league: "Brasileirão Série A", country: "Brasil",
+    home: "Grêmio", away: "Internacional", market: "Resultado Final", updatedAt: minsAgo(2),
+    outcomes: [
+      { label: "Grêmio", odds: { "Bet365": 2.10, "Betano": 2.18, "KTO": 2.20, "Pinnacle": 2.15 } },
+      { label: "Empate", odds: { "Bet365": 3.20, "Betano": 3.30, "KTO": 3.10, "Pinnacle": 3.25 } },
+      { label: "Internacional", odds: { "Bet365": 1.95, "Betano": 2.00, "KTO": 1.90, "Betfair": 2.05 } },
+    ],
+  },
+  {
+    id: "ev2", sport: "Futebol", league: "Premier League", country: "Inglaterra", updatedAt: minsAgo(1),
+    home: "Arsenal", away: "Chelsea", market: "Resultado Final",
+    outcomes: [
+      { label: "Arsenal", odds: { "Bet365": 2.20, "Betano": 2.05, "Betfair": 2.15 } },
+      { label: "Empate", odds: { "Bet365": 3.60, "Betano": 3.50, "Pinnacle": 3.55 } },
+      { label: "Chelsea", odds: { "Bet365": 3.10, "Betano": 3.30, "KTO": 3.40, "Betfair": 3.45 } },
+    ],
+  },
+  {
+    id: "ev3", sport: "Tênis", league: "ATP Masters 1000", country: "EUA", updatedAt: minsAgo(4),
+    home: "C. Alcaraz", away: "J. Sinner", market: "Vencedor da Partida",
+    outcomes: [
+      { label: "C. Alcaraz", odds: { "Bet365": 1.80, "Pinnacle": 1.78, "Betano": 1.82 } },
+      { label: "J. Sinner", odds: { "Bet365": 2.05, "Betfair": 2.10, "KTO": 1.98, "Pinnacle": 2.02 } },
+    ],
+  },
+  {
+    id: "ev4", sport: "Basquete", league: "NBA", country: "EUA", updatedAt: minsAgo(18),
+    home: "Boston Celtics", away: "LA Lakers", market: "Vencedor (com prorrogação)",
+    outcomes: [
+      { label: "Boston Celtics", odds: { "Bet365": 1.65, "Betano": 1.62, "Novibet": 1.60 } },
+      { label: "LA Lakers", odds: { "Bet365": 2.30, "Betano": 2.35, "Novibet": 2.40, "KTO": 2.25 } },
+    ],
+  },
+  {
+    id: "ev5", sport: "MMA", league: "UFC 310", country: "EUA", updatedAt: minsAgo(6),
+    home: "A. Pereira", away: "J. Ankalaev", market: "Vencedor da Luta",
+    outcomes: [
+      { label: "A. Pereira", odds: { "Bet365": 1.90, "Betano": 1.95, "Sportingbet": 2.05 } },
+      { label: "J. Ankalaev", odds: { "Bet365": 2.00, "Betfair": 2.10, "KTO": 1.95, "Pinnacle": 1.98 } },
+    ],
+  },
+  {
+    id: "ev6", sport: "Vôlei", league: "Superliga Masculina", country: "Brasil", updatedAt: minsAgo(27),
+    home: "Sesi-SP", away: "Sada Cruzeiro", market: "Vencedor da Partida",
+    outcomes: [
+      { label: "Sesi-SP", odds: { "Betnacional": 2.05, "KTO": 1.98, "Betano": 2.00 } },
+      { label: "Sada Cruzeiro", odds: { "Betnacional": 1.80, "KTO": 1.85, "Betano": 1.82 } },
+    ],
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Núcleo matemático — detecção e cálculo de arbitragem
@@ -580,7 +630,7 @@ export default function App() {
   const [expandedId, setExpandedId] = useState(null);
   const [tick, setTick] = useState(0);
   const [showFilters, setShowFilters] = useState(true);
-  const [manualEvents, setManualEvents] = useState(SEED_EVENTS);
+  const [manualEvents, setManualEvents] = useState([]);
   const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt } = useLiveOdds(30000);
   const events = [...liveEvents, ...manualEvents];
   const setEvents = setManualEvents; // "Gerenciar odds" segue editando só os manuais
