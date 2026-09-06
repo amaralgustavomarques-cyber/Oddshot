@@ -6,7 +6,13 @@ import { OddsPapiProvider } from "@/lib/providers/oddspapi";
 // Esportes/torneios por provider — cada um usa o formato de chave da própria API.
 const THE_ODDS_API_SPORTS = ["soccer_brazil_campeonato", "soccer_epl", "basketball_nba"];
 const ODDS_API_IO_SPORTS = ["football", "basketball"];
-const ODDSPAPI_TOURNAMENTS = ["325"]; // 325 = Brasileirão Série A (confirmado via teste real)
+const ODDSPAPI_TOURNAMENTS = [
+  "325", // Brasileirão Série A
+  "390", // Brasileirão Série B
+  "17",  // Premier League (Inglaterra)
+  "679", // UEFA Europa League
+  "384", // Copa Libertadores
+];
 
 // GET /api/odds                          -> usa o provider padrão (oddspapi, já confirmado trazendo o Brasileirão de verdade)
 // GET /api/odds?provider=the-odds-api    -> alterna pra The Odds API (precisa de ODDS_API_KEY)
