@@ -45,6 +45,42 @@ function isAllowedHouse(key: string): boolean {
   return ALLOWED_HOUSES.some((allowed) => normalized.includes(allowed));
 }
 
+// Identifica a "marca base" a partir da chave da casa, ignorando sufixos
+// regionais: "bet365.bet.br" -> "bet365", "betfair-ex" -> "betfair".
+function baseBrand(key: string): string {
+  const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return ALLOWED_HOUSES.find((allowed) => normalized.includes(allowed)) ?? normalized;
+}
+
+function isBrazilianVariant(key: string): boolean {
+  return key.toLowerCase().includes(".bet.br") || key.toLowerCase().endsWith(".br");
+}
+
+// Para cada marca (bet365, betano, kto...), se existir uma variante ".bet.br",
+// mantém só ela. Se não existir nenhuma variante brasileira, mantém a odd
+// mais alta entre as variantes disponíveis (fallback razoável).
+function keepBrazilianVariant(odds: Record<string, number>): Record<string, number> {
+  const byBrand = new Map<string, [string, number][]>();
+  for (const [key, price] of Object.entries(odds)) {
+    const brand = baseBrand(key);
+    if (!byBrand.has(brand)) byBrand.set(brand, []);
+    byBrand.get(brand)!.push([key, price]);
+  }
+
+  const result: Record<string, number> = {};
+  for (const [, entries] of byBrand) {
+    const brVariant = entries.find(([key]) => isBrazilianVariant(key));
+    if (brVariant) {
+      result[brVariant[0]] = brVariant[1];
+    } else {
+      const best = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
+      result[best[0]] = best[1];
+    }
+  }
+  return result;
+}
+
+
 interface RawFixture {
   fixtureId: string;
   participant1Id: number;
@@ -149,6 +185,15 @@ export class OddsPapiProvider implements OddsProvider {
           if (!outcomeOdds[label]) outcomeOdds[label] = {};
           outcomeOdds[label][houseKey] = price;
         }
+      }
+
+      // Várias marcas vêm duplicadas por região (ex.: "bet365", "bet365.de",
+      // "bet365.bet.br"). Só a variante ".bet.br" é a que um apostador
+      // brasileiro realmente consegue acessar — então, quando ela existe,
+      // descartamos as outras variantes da mesma marca pra não recomendar
+      // uma odd de uma casa que você não pode usar.
+      for (const label of Object.keys(outcomeOdds)) {
+        outcomeOdds[label] = keepBrazilianVariant(outcomeOdds[label]);
       }
 
       const outcomes: NormalizedOutcome[] = Object.entries(outcomeOdds)
