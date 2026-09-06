@@ -36,7 +36,7 @@ import type { OddsProvider, NormalizedEvent, NormalizedOutcome } from "./types";
 
 const BASE_URL = "https://api.oddspapi.io/v4";
 const MAIN_MARKET_ID = "101"; // 1X2 / moneyline
-const MAX_FIXTURES_PER_FETCH = 8; // 5 torneios × 8 jogos + participants/fixtures ≈ 46 chamadas/hora
+const MAX_FIXTURES_PER_FETCH = 3; // reduzido para caber no limite de 60s de execução da Vercel (plano free)
 
 const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet", "betnacional"];
 
@@ -156,13 +156,15 @@ export class OddsPapiProvider implements OddsProvider {
 
     const participants = await this.getParticipants(upcoming[0].sportId);
 
-    const oddsResults = await Promise.allSettled(upcoming.map((f) => this.getOddsForFixture(f.fixtureId)));
-
     const events: NormalizedEvent[] = [];
-    upcoming.forEach((fixture, i) => {
-      const result = oddsResults[i];
-      if (result.status !== "fulfilled" || !result.value) return;
-      const odds = result.value;
+
+    // Uma chamada de /odds por vez, com pausa — evita o 429 RATE_LIMITED
+    // que acontece quando várias chamadas chegam juntas no mesmo endpoint.
+    for (let i = 0; i < upcoming.length; i++) {
+      const fixture = upcoming[i];
+      const odds = await this.getOddsForFixture(fixture.fixtureId);
+      if (i < upcoming.length - 1) await sleep(2200);
+      if (!odds) continue;
 
       const homeLabel = participants[String(fixture.participant1Id)] ?? `Time ${fixture.participant1Id}`;
       const awayLabel = participants[String(fixture.participant2Id)] ?? `Time ${fixture.participant2Id}`;
@@ -200,7 +202,7 @@ export class OddsPapiProvider implements OddsProvider {
         .filter(([, o]) => Object.keys(o).length > 0)
         .map(([label, o]) => ({ label, odds: o }));
 
-      if (outcomes.length < 2) return; // nenhuma casa permitida cobre esse jogo ainda
+      if (outcomes.length < 2) continue; // nenhuma casa permitida cobre esse jogo ainda
 
       events.push({
         id: fixture.fixtureId,
@@ -213,8 +215,12 @@ export class OddsPapiProvider implements OddsProvider {
         updatedAt: Date.now(),
         outcomes,
       });
-    });
+    }
 
     return events;
   }
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
