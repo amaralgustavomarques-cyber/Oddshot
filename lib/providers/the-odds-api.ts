@@ -38,8 +38,15 @@ const ALLOWED_HOUSES = [
   "betnacional",
 ];
 
+// A Betfair Exchange (mercado de apostas mútuas entre usuários) é um
+// produto diferente do Betfair de odds fixas — nem sempre bate com o que
+// você realmente consegue no site/app brasileiro, então excluímos essa
+// variante mesmo com "betfair" passando no filtro de casas permitidas.
+const EXCLUDED_VARIANTS = ["betfairex", "exchange"];
+
 function isAllowedHouse(title: string): boolean {
   const normalized = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (EXCLUDED_VARIANTS.some((ex) => normalized.includes(ex))) return false;
   return ALLOWED_HOUSES.some((allowed) => normalized.includes(allowed));
 }
 
