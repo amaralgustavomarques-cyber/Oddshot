@@ -1,3 +1,4 @@
+
 import type { OddsProvider, NormalizedEvent, NormalizedOutcome } from "./types";
 
 // -----------------------------------------------------------------------
@@ -32,7 +33,10 @@ const MAX_EVENTS_PER_FETCH = 8; // proteção contra estourar a cota do free tie
 
 // Nomes exatamente como a Odds-API.io espera no parâmetro `bookmakers`.
 // Ajuste se, ao testar, algum nome vier diferente na resposta.
-const BR_BOOKMAKERS = ["Bet365", "Betano", "KTO", "Pinnacle", "Betfair", "Sportingbet", "Novibet", "Betnacional"];
+const BR_BOOKMAKERS = ["Bet365", "Betano", "KTO", "Pinnacle", "Betfair", "Sportingbet", "Novibet"];
+// Betnacional removida: em outro provider (OddsPapi) a fonte trouxe odds
+// erradas/desatualizadas para essa casa. Cadastre-a manualmente em
+// "Gerenciar odds" quando quiser incluí-la.
 
 interface RawMoneylineOdds { home: string; draw?: string; away: string; }
 interface RawMarket { name: string; odds: RawMoneylineOdds[]; updatedAt?: string; }
