@@ -139,6 +139,43 @@ const INDIGO = "#6C7CF0";
 
 const mono = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" };
 
+// Link direto pro site de cada casa. A chave que vem da API às vezes tem
+// sufixo regional (ex.: "bet365.bet.br", "kto.bet.br") — por isso o
+// getHouseUrl abaixo faz correspondência por substring, não por igualdade.
+const HOUSE_URLS = {
+  bet365: "https://www.bet365.bet.br",
+  betano: "https://www.betano.bet.br",
+  kto: "https://www.kto.bet.br",
+  pinnacle: "https://www.pinnacle.com",
+  betfair: "https://www.betfair.bet.br",
+  sportingbet: "https://www.sportingbet.bet.br",
+  novibet: "https://www.novibet.bet.br",
+  betnacional: "https://www.betnacional.bet.br",
+};
+
+function getHouseUrl(houseName) {
+  const normalized = (houseName || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const brand = Object.keys(HOUSE_URLS).find((key) => normalized.includes(key));
+  return brand ? HOUSE_URLS[brand] : null;
+}
+
+function HouseLink({ house, T, style }) {
+  const url = getHouseUrl(house);
+  if (!url) return <span style={style}>{house}</span>;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      style={{ ...style, textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 2 }}
+      className="hover:brightness-125"
+    >
+      {house}
+    </a>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Componentes de exibição
 // ---------------------------------------------------------------------------
@@ -195,7 +232,7 @@ function ExpandedDetail({ ev, analysis, T }) {
               <div key={o.label} style={{ border: `1px solid ${T.border}`, background: T.panel }} className="rounded-lg p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div style={{ color: T.text }} className="text-sm font-medium truncate">{o.label}</div>
-                  <div style={{ color: T.textMuted }} className="text-xs mt-0.5">Casa: <span style={{ color: INDIGO }}>{o.bestHouse}</span></div>
+                  <div style={{ color: T.textMuted }} className="text-xs mt-0.5">Casa: <HouseLink house={o.bestHouse} T={T} style={{ color: INDIGO }} /></div>
                 </div>
                 <div className="text-right shrink-0">
                   <div style={{ ...mono, color: T.text }} className="text-sm">odd {o.bestOdd.toFixed(2)}</div>
@@ -246,7 +283,7 @@ function OpportunityRow({ ev, analysis, T, expanded, onToggle }) {
         <td className="py-3 px-3 text-xs" style={{ color: T.text }}>{ev.market}</td>
         <td className="py-3 px-3 text-xs" style={{ color: T.text }}>{bestOutcome.label}</td>
         <td className="py-3 px-3 text-sm font-semibold" style={{ ...mono, color: T.text }}>{bestOutcome.bestOdd.toFixed(2)}</td>
-        <td className="py-3 px-3 text-xs" style={{ color: INDIGO }}>{bestOutcome.bestHouse}</td>
+        <td className="py-3 px-3 text-xs"><HouseLink house={bestOutcome.bestHouse} T={T} style={{ color: INDIGO }} /></td>
         <td className="py-3 px-3"><ArbBadge arbPercent={analysis.arbPercent} isStale={analysis.isStale} /></td>
         <td className="py-3 px-3 text-sm" style={{ ...mono, color: T.text }}>{formatBRL(analysis.totalInvestido)}</td>
         <td className="py-3 px-3 text-sm" style={{ ...mono, color: T.text }}>{formatBRL(analysis.retornoGarantido)}</td>
