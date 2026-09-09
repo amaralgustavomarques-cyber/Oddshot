@@ -668,7 +668,7 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [showFilters, setShowFilters] = useState(true);
   const [manualEvents, setManualEvents] = useState([]);
-  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt } = useLiveOdds(3600000); // 1h — orçamento calculado para ~46 chamadas/hora
+  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt, search: searchLiveOdds } = useLiveOdds(); // busca só quando você clica no botão
   const events = [...liveEvents, ...manualEvents];
   const setEvents = setManualEvents; // "Gerenciar odds" segue editando só os manuais
   const [banca, setBanca] = useState(1000);
@@ -730,9 +730,9 @@ export default function App() {
 
         <div className="flex items-center gap-2 flex-wrap">
           <div style={{ background: T.panelAlt, border: `1px solid ${T.border}` }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
-            <Wifi size={13} color={liveError ? RED : liveEvents.length > 0 ? GREEN : AMBER} />
+            <Wifi size={13} color={liveError ? RED : liveEvents.length > 0 ? GREEN : lastFetchedAt !== null ? AMBER : T.textMuted} />
             <span style={{ color: T.text }} className="text-xs font-medium">
-              {liveError ? "Erro na API" : liveLoading ? "Conectando…" : liveEvents.length > 0 ? "Conectado" : "Sem dados da API"}
+              {liveError ? "Erro na API" : liveLoading ? "Buscando…" : liveEvents.length > 0 ? "Conectado" : lastFetchedAt !== null ? "Sem dados da API" : "Clique em Buscar odds"}
             </span>
           </div>
           <div style={{ background: T.panelAlt, border: `1px solid ${T.border}` }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
@@ -749,8 +749,8 @@ export default function App() {
               className="text-xs outline-none"
             />
           </div>
-          <button onClick={() => setTick((n) => n + 1)} style={{ background: `${INDIGO}1F`, color: INDIGO, border: `1px solid ${INDIGO}40` }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
-            <RefreshCw size={13} /> Atualizar
+          <button onClick={() => { searchLiveOdds(); setTick((n) => n + 1); }} disabled={liveLoading} style={{ background: `${INDIGO}1F`, color: INDIGO, border: `1px solid ${INDIGO}40`, opacity: liveLoading ? 0.6 : 1, cursor: liveLoading ? "wait" : "pointer" }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:brightness-110">
+            <RefreshCw size={13} className={liveLoading ? "animate-spin" : ""} /> {liveLoading ? "Buscando..." : "Buscar odds"}
           </button>
           <button style={{ background: T.panelAlt, border: `1px solid ${T.border}`, color: T.text }} className="w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110">
             <Settings size={14} />
