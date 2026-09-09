@@ -35,7 +35,9 @@ const ALLOWED_HOUSES = [
   "betfair",
   "sportingbet",
   "novibet",
-  "betnacional",
+  // Betnacional removida da busca automática: a fonte de dados estava
+  // trazendo odds erradas/desatualizadas para essa casa. Cadastre-a
+  // manualmente na aba "Gerenciar odds" quando quiser incluí-la.
 ];
 
 // A Betfair Exchange (mercado de apostas mútuas entre usuários) é um
