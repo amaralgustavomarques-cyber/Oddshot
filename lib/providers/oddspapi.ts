@@ -38,7 +38,11 @@ const BASE_URL = "https://api.oddspapi.io/v4";
 const MAIN_MARKET_ID = "101"; // 1X2 / moneyline
 const MAX_FIXTURES_PER_FETCH = 3; // reduzido para caber no limite de 60s de execução da Vercel (plano free)
 
-const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet", "betnacional"];
+const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet"];
+// Betnacional foi removida da busca automática: a fonte de dados (OddsPapi)
+// estava trazendo odds erradas/desatualizadas para essa casa especificamente.
+// Cadastre a Betnacional manualmente na aba "Gerenciar odds" quando quiser
+// incluí-la — lá o valor é o que você mesmo conferiu no site dela.
 
 // A Betfair Exchange (mercado de apostas mútuas entre usuários, "-ex") é um
 // produto diferente do Betfair de odds fixas — as odds de lá nem sempre
