@@ -36,7 +36,7 @@ import type { OddsProvider, NormalizedEvent, NormalizedOutcome } from "./types";
 
 const BASE_URL = "https://api.oddspapi.io/v4";
 const MAIN_MARKET_ID = "101"; // 1X2 / moneyline
-const MAX_FIXTURES_PER_FETCH = 3; // reduzido para caber no limite de 60s de execução da Vercel (plano free)
+const MAX_FIXTURES_PER_FETCH = 6; // agora cada chamada trata só 1 campeonato por vez — cabe bem mais folgado no limite de 60s
 
 const ALLOWED_HOUSES = ["bet365", "betano", "kto", "pinnacle", "betfair", "sportingbet", "novibet"];
 // Betnacional foi removida da busca automática: a fonte de dados (OddsPapi)
