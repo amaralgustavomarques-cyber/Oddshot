@@ -668,7 +668,7 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [showFilters, setShowFilters] = useState(true);
   const [manualEvents, setManualEvents] = useState([]);
-  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt, search: searchLiveOdds } = useLiveOdds(); // busca só quando você clica no botão
+  const { events: liveEvents, loading: liveLoading, error: liveError, lastFetchedAt, progress: liveProgress, search: searchLiveOdds } = useLiveOdds(); // busca só quando você clica no botão
   const events = [...liveEvents, ...manualEvents];
   const setEvents = setManualEvents; // "Gerenciar odds" segue editando só os manuais
   const [banca, setBanca] = useState(1000);
@@ -732,7 +732,7 @@ export default function App() {
           <div style={{ background: T.panelAlt, border: `1px solid ${T.border}` }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
             <Wifi size={13} color={liveError ? RED : liveEvents.length > 0 ? GREEN : lastFetchedAt !== null ? AMBER : T.textMuted} />
             <span style={{ color: T.text }} className="text-xs font-medium">
-              {liveError ? "Erro na API" : liveLoading ? "Buscando…" : liveEvents.length > 0 ? "Conectado" : lastFetchedAt !== null ? "Sem dados da API" : "Clique em Buscar odds"}
+              {liveError ? "Erro na API" : liveLoading ? (liveProgress ?? "Buscando…") : liveEvents.length > 0 ? "Conectado" : lastFetchedAt !== null ? "Sem dados da API" : "Clique em Buscar odds"}
             </span>
           </div>
           <div style={{ background: T.panelAlt, border: `1px solid ${T.border}` }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg">
